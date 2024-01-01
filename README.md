@@ -1,4 +1,4 @@
-## Random Aggregate Structure Generator written in python
+## Random Aggregate Structure Generator writen in python
 
 **I'll populate this readme later**
-kindly reference this if used
+**kindly reference this if used**
