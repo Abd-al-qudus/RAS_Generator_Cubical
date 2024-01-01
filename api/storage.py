@@ -3,6 +3,8 @@
 """this class is a module containing the storage of the
     coordinates of the polyhedron and its center"""
 
+import csv
+
 
 class Storage:
     """storage class"""
@@ -28,4 +30,7 @@ class Storage:
 
     def export_to_csv(self):
         """export the coordinates to csv"""
-
+        with open('coordinates.csv', 'w', newline='') as file_obj:
+            writer = csv.writer(file_obj)
+            writer.writerow(['node-label', 'x', 'y', 'z'])
+            [writer.writerow([i+1] + row) for i, rows in enumerate(self.polyhedrons) for row in rows]

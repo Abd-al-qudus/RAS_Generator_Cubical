@@ -17,7 +17,7 @@ class Visualizer:
 
     def visualize(self):
         """visualize a set of polyhedrons"""
-        color = (rd(0, 255)/255, rd(0, 255)/255, rd(0, 255)/255, 1.0)
+        color = (rd(0, 255)/255, 1.0, rd(0, 255)/255, 1.0)
         volume = 0
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
