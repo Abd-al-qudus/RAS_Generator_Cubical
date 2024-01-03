@@ -12,8 +12,9 @@ from random import randint as rd
 class Visualizer:
     """visualize the coordinates with matplotlib"""
 
-    def __init__(self, polyhedrons):
+    def __init__(self, polyhedrons, cv_hull):
         self.polyhedrons = polyhedrons
+        self.chull = cv_hull
 
     def visualize(self):
         """visualize a set of polyhedrons"""
@@ -24,6 +25,7 @@ class Visualizer:
         for polyhedron in self.polyhedrons:
             polyhedron = np.array(polyhedron)
             hull = ConvexHull(polyhedron)
+            self.chull.append(hull.simplices.tolist())
             ax.plot_trisurf(polyhedron[:, 0], polyhedron[:, 1], polyhedron[:, 2], triangles=hull.simplices, color=color)
             volume += hull.volume
 

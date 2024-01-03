@@ -10,6 +10,7 @@ class Storage:
     """storage class"""
     def __init__(self):
         self.polyhedrons = []
+        self.hull = []
         self.centers = []
 
     def store_polyhedrons(self, coordinates):
@@ -34,3 +35,8 @@ class Storage:
             writer = csv.writer(file_obj)
             writer.writerow(['node-label', 'x', 'y', 'z'])
             [writer.writerow([i+1] + row) for i, rows in enumerate(self.polyhedrons) for row in rows]
+
+        with open('hulls.csv', 'w', newline='') as file_obj:
+            writer = csv.writer(file_obj)
+            writer.writerow(['polygon-label', 'a', 'b', 'c'])
+            [writer.writerow([i+1] + row) for i, rows in enumerate(self.hull) for row in rows]
