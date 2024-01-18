@@ -16,7 +16,7 @@ class Checker:
         self.poly_B = poly_B
         self.bounds = bounds
         self.center_A = center_A
-        self.center_B = center_B
+        self.centers = center_B
         self.min_d = min_d
 
     def init_check_polygon_in_bound(self, polyhedron, bounds):
@@ -66,30 +66,35 @@ class Checker:
     def init_is_intersecting(self, poly_L, poly_R):
         """check whether polyhedron Left and polyhedron Right do not intersect
         the equation is defined by G(x, y, z) x G(xi, yi, zi) = 0"""
-        mean_O_R = np.mean(poly_R, axis=0)
-        G_O_matrix = self.init_generate_G_matrix(poly_R, mean_O_R)
-        for vertex in poly_L:
-            G_V_matrix = self.init_generate_G_matrix(poly_R, vertex)
-            if G_V_matrix * G_O_matrix >= 0:
-                return True
+        # mean_O_R = np.mean(poly_R, axis=0)
+        # G_O_matrix = self.init_generate_G_matrix(poly_R, mean_O_R)
+        # for vertex in poly_L:
+        #     G_V_matrix = self.init_generate_G_matrix(poly_R, vertex)
+        #     if G_V_matrix * G_O_matrix >= 0:
+        #         return True
 
-        return False
-        #convexhall computation makes it slower
-        #G matrix computation makes it faster
-        # poly_l = Polygon(poly_L)
-        # poly_r = Polygon(poly_R)
-        # return poly_l.convex_hull.intersects(poly_r.convex_hull)
+        # return False
+        # convexhall computation makes it slower
+        # G matrix computation makes it faster
+        poly_l = Polygon(poly_L)
+        poly_r = Polygon(poly_R)
+        return poly_l.convex_hull.intersects(poly_r.convex_hull)
 
-    def init_is_radially_separated(self, poly_L, poly_R):
+    def init_is_radially_separated(self, poly_L, centers):
         """check the radial separation of the two polyhedrons,
         the poly martix contains coordinates of O and r"""
-        check = (((poly_L[0] - poly_R[0]) ** 2) + ((poly_L[1] - poly_R[1]) ** 2 + (poly_L[2] - poly_R[2]) ** 2) ** 0.5) - (poly_L[3] + poly_R[3]) > self.min_d
-        return check
+        for poly_R in centers:
+            check = (((poly_L[0] - poly_R[0]) ** 2) + ((poly_L[1] - poly_R[1]) ** 2 + (poly_L[2] - poly_R[2]) ** 2) ** 0.5) - (poly_L[3] + poly_R[3]) > self.min_d
+            if check == False:
+                return check
+        return True
 
     def init_all_checks(self):
         """check whether the polyhedron is not overriding others"""
-        radial = self.init_is_radially_separated(self.center_A, self.center_B)
+        radial = self.init_is_radially_separated(self.center_A, self.centers)
         bound = self.init_check_polygon_in_bound(self.poly_A, self.bounds)
-        intersect = self.init_is_intersecting(self.poly_B, self.poly_A)
-        return bound and radial and intersect
+        return radial and bound
+
+        # intersect = self.init_is_intersecting(self.poly_B, self.poly_A)
+        # return bound and radial and intersect
 

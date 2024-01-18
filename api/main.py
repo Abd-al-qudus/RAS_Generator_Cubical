@@ -11,17 +11,17 @@ storage = Storage()
 print('initiating configurations')
 config = Configuration(
     d,
-    0.45,
+    0.40,
     0.5,
-    3,
+    2,
     n_min=8.0,
     n_max=17,
     x_min=0,
-    x_max=100,
+    x_max=50,
     y_min=0,
-    y_max=100,
+    y_max=50,
     z_min=0,
-    z_max=100
+    z_max=50
 )
 print('initiating generator')
 generator = Generator(config, storage)

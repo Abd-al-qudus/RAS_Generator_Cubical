@@ -71,7 +71,9 @@ class Generator:
             self.config.r_min,
             self.config.r_max
         )
+        print(volumes)
         for v in volumes:
+            print(v['diameters'])
             if vr > 0:
                 v['volume'] += vr
                 vr = 0
@@ -97,12 +99,14 @@ class Generator:
                         self.config.z_min,
                         self.config.z_max], 
                         center, 
-                        self.storage.centers[-1],
+                        self.storage.centers,
                         self.config.sd).init_all_checks():
                         self.storage.store_polyhedrons(result)
                         self.storage.store_centers(center)
                         vc += p_vol
                         vl = p_vol
+                        print(len(self.storage.polyhedrons), v['volume'], vc)
+                        # print(result)
                     else:
                         continue
                 else:
