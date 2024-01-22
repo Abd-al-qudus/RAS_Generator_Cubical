@@ -11,9 +11,9 @@ storage = Storage()
 print('initiating configurations')
 config = Configuration(
     d,
-    0.40,
+    0.30,
     0.5,
-    2,
+    0.005,
     n_min=8.0,
     n_max=17,
     x_min=0,

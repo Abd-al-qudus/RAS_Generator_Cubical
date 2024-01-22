@@ -35,14 +35,14 @@ class Generator:
                             'diameters': [d[i], d[i + 1]]
                         }
                 volume.append(vol_obj)
-        volume = sorted(volume, key=lambda k: k['volume'])
+        volume = sorted(volume, key=lambda k: k['diameters'])
         volume = volume[-1::-1]
         return volume
     
     def generate_polyhedron(self, d, x_min, x_max, y_min, y_max, z_min, z_max, n_min, n_max):
         """generate polyhedrons faces"""
         poly_coordinates = []
-        r = min(d) + random.uniform(0, 1) * (max(d) - min(d))
+        r = (min(d) / 2) + random.uniform(0, 1) * ((max(d)/ 2) - (min(d) / 2))
         n = n_min + random.uniform(0, 1) * (n_max - n_min)
         x_o = x_min + random.uniform(0, 1) * (x_max - x_min)
         y_o = y_min + random.uniform(0, 1) * (y_max - y_min)
@@ -91,7 +91,7 @@ class Generator:
                 p_vol = ConvexHull(result).volume
                 if len(self.storage.polyhedrons) > 0:
                     if self.check(result, 
-                        self.storage.polyhedrons[-1], 
+                        self.storage.polyhedrons, 
                         [self.config.x_min,
                         self.config.x_max,
                         self.config.y_min,

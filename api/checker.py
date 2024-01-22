@@ -10,10 +10,10 @@ from shapely.geometry import Polygon
 class Checker:
     """contains the checks on each polygons"""
 
-    def __init__(self, poly_A, poly_B, bounds, center_A, center_B, min_d):
+    def __init__(self, poly_A, polyhedrons, bounds, center_A, center_B, min_d):
         """initialize the checker class"""
         self.poly_A = poly_A
-        self.poly_B = poly_B
+        self.polyhedrons = polyhedrons
         self.bounds = bounds
         self.center_A = center_A
         self.centers = center_B
@@ -63,28 +63,53 @@ class Checker:
         G_matrix = ((vertex[0] - x_o) * d_x) + ((vertex[1] - y_o) * d_y) + ((vertex[2] - z_o) * d_z)
         return G_matrix
 
-    def init_is_intersecting(self, poly_L, poly_R):
+    def init_is_intersecting(self, polyhedrons, poly_R):
         """check whether polyhedron Left and polyhedron Right do not intersect
         the equation is defined by G(x, y, z) x G(xi, yi, zi) = 0"""
         # mean_O_R = np.mean(poly_R, axis=0)
         # G_O_matrix = self.init_generate_G_matrix(poly_R, mean_O_R)
-        # for vertex in poly_L:
-        #     G_V_matrix = self.init_generate_G_matrix(poly_R, vertex)
-        #     if G_V_matrix * G_O_matrix >= 0:
-        #         return True
+        # for vert in polyhedrons:
+        #     for vertex in vert:
+        #         G_V_matrix = self.init_generate_G_matrix(poly_R, vertex)
+        #         if G_V_matrix * G_O_matrix >= 0:
+        #             return False
 
-        # return False
+        # return True
         # convexhall computation makes it slower
         # G matrix computation makes it faster
-        poly_l = Polygon(poly_L)
-        poly_r = Polygon(poly_R)
-        return poly_l.convex_hull.intersects(poly_r.convex_hull)
+        for poly_L in polyhedrons:
+            poly_l = Polygon(poly_L)
+            poly_r = Polygon(poly_R)
+            check = poly_l.convex_hull.intersects(poly_r.convex_hull)
+            if check == True:
+                return False
+            
+        return True
+    
+    def project_onto_axis(self, vertices, axis):
+        # Project vertices onto the axis and return the min and max values
+        projections = np.dot(vertices, axis)
+        return np.min(projections), np.max(projections)
+
+    def separating_axis_test(self, polyhedrons, polyhedron2):
+        # Check for intersection along each axis
+        for polyhedron1 in polyhedrons:
+            for axis in polyhedron1 + polyhedron2:
+                min1, max1 = self.project_onto_axis(polyhedron1, axis)
+                min2, max2 = self.project_onto_axis(polyhedron2, axis)
+
+                if max1 < min2 or max2 < min1:
+                    # Polyhedra are separated along this axis, no intersection
+                    return False
+
+            # If no separation along any axis, polyhedra intersect
+        return True
 
     def init_is_radially_separated(self, poly_L, centers):
         """check the radial separation of the two polyhedrons,
         the poly martix contains coordinates of O and r"""
         for poly_R in centers:
-            check = (((poly_L[0] - poly_R[0]) ** 2) + ((poly_L[1] - poly_R[1]) ** 2 + (poly_L[2] - poly_R[2]) ** 2) ** 0.5) - (poly_L[3] + poly_R[3]) > self.min_d
+            check = (((poly_L[0] - poly_R[0]) ** 2) + ((poly_L[1] - poly_R[1]) ** 2 + (poly_L[2] - poly_R[2]) ** 2) ** 0.5) - (poly_L[3] + poly_R[3]) > self.min_d * poly_L[3] * 2
             if check == False:
                 return check
         return True
@@ -93,8 +118,13 @@ class Checker:
         """check whether the polyhedron is not overriding others"""
         radial = self.init_is_radially_separated(self.center_A, self.centers)
         bound = self.init_check_polygon_in_bound(self.poly_A, self.bounds)
-        return radial and bound
+        # return radial and bound
 
-        # intersect = self.init_is_intersecting(self.poly_B, self.poly_A)
-        # return bound and radial and intersect
+        # intersect = self.separating_axis_test(self.polyhedrons, self.poly_A)
+        # if intersect:
+        #     return bound and radial and False
+        # else:
+        #     return bound and radial and True
+        intersect = self.init_is_intersecting(self.polyhedrons, self.poly_A)
+        return bound and radial and intersect
 
