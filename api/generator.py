@@ -20,16 +20,35 @@ class Generator:
         self.storage = storage
         self.check = Checker
 
-    def compute_volume(self, d, vf, vc, n, r_min, r_max):
+    def compute_volume(self, d, vf, vc, n, d_min, d_max):
         """compute the volume per segment for generation of aggregates"""
         volume = []
+        p_mnd = 100 * ((d_min / d_max) ** n)
+        p_mxd = 100 * ((d_max / d_max) ** n)
         for i in range(len(d)):
             if i + 1 != len(d):
-                p_d = 100 * ((d[i] / r_max) ** n)
-                p_nd = 100 * ((d[i + 1] / r_max) ** n)
-                p_mnd = 100 * ((r_min / r_max) ** n)
-                p_mxd = 100 * ((r_max / r_max) ** n)
+                p_d = 100 * ((d[i] / d_max) ** n)
+                p_nd = 100 * ((d[i + 1] / d_max) ** n)
                 bound_vol = ((p_nd - p_d) / (p_mxd - p_mnd)) * vf * vc
+                vol_obj = {
+                            'volume': bound_vol,
+                            'diameters': [d[i], d[i + 1]]
+                        }
+                volume.append(vol_obj)
+        volume = sorted(volume, key=lambda k: k['diameters'])
+        volume = volume[-1::-1]
+        return volume
+    
+    def compute_hd_vbound(self, p, d, vf, vc):
+        """compute hard-coded volume fraction"""
+        volume = []
+        p_max = max(p)
+        p_min = min(p)
+        for i in range(len(d)):
+            if i + 1 != len(d):
+                p_d = p[i]
+                p_dn = p[i + 1]
+                bound_vol = ((p_dn - p_d) / (p_max - p_min)) * vf * vc
                 vol_obj = {
                             'volume': bound_vol,
                             'diameters': [d[i], d[i + 1]]
@@ -68,9 +87,15 @@ class Generator:
             self.config.vf,
             self.config.vc,
             self.config.n,
-            self.config.r_min,
-            self.config.r_max
+            self.config.d_min,
+            self.config.d_max
         )
+        # volumes = self.compute_hd_vbound(
+        #     self.config.p,
+        #     self.config.diameters,
+        #     self.config.vf,
+        #     self.config.vc
+        # )
         print(volumes)
         for v in volumes:
             print(v['diameters'])
@@ -106,6 +131,8 @@ class Generator:
                         vc += p_vol
                         vl = p_vol
                         print(len(self.storage.polyhedrons), v['volume'], vc)
+                        # print('----------------------------------------')
+                        # print(self.storage.polyhedrons)
                         # print(result)
                     else:
                         continue

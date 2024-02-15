@@ -31,5 +31,5 @@ class Configuration:
         self.n_min = kwargs.get('n_min', None)
         self.n_max = kwargs.get('n_max', None)
         self.vc = self.x_max * self.y_max * self.z_max
-        self.r_min = min(self.diameters)
-        self.r_max = max(self.diameters)
+        self.d_min = min(self.diameters)
+        self.d_max = max(self.diameters)

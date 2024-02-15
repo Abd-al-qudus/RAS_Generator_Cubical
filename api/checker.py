@@ -10,20 +10,18 @@ from shapely.geometry import Polygon
 class Checker:
     """contains the checks on each polygons"""
 
-    def __init__(self, poly_A, polyhedrons, bounds, center_A, center_B, min_d):
+    def __init__(self, poly_A, polyhedrons, bounds, center_A, center_B, sd):
         """initialize the checker class"""
         self.poly_A = poly_A
         self.polyhedrons = polyhedrons
         self.bounds = bounds
         self.center_A = center_A
         self.centers = center_B
-        self.min_d = min_d
+        self.sd = sd
 
     def init_check_polygon_in_bound(self, polyhedron, bounds):
         """check the conditions of the polyhedron"""
-        check_x = False
-        check_y = False
-        check_z = False
+        """check the conditions of the polyhedron"""
         coor_x = [coor[0] for coor in polyhedron]
         coor_y = [coor[1] for coor in polyhedron]
         coor_z = [coor[2] for coor in polyhedron]
@@ -31,13 +29,13 @@ class Checker:
         x_m = min(coor_x); x_ma = max(coor_x)
         y_m = min(coor_y); y_ma = max(coor_y)
         z_m = min(coor_z); z_ma = max(coor_z)
-        if x_m > x_min + self.min_d and x_max - self.min_d > x_ma:
-            check_x = True
-        if y_m > y_min + self.min_d and y_max - self.min_d > y_ma:
-            check_y = True
-        if z_m > z_min + self.min_d and z_max - self.min_d > z_ma:
-            check_z = True
-        return check_x and check_y and check_z
+        if x_m < x_min + (self.sd * self.center_A[3] * 2) or x_ma > x_max - (self.sd * self.center_A[3] * 2):
+            return False
+        if y_m < y_min + (self.sd * self.center_A[3] * 2) or y_ma > y_max - (self.sd * self.center_A[3] * 2):
+            return False
+        if z_m < z_min + (self.sd * self.center_A[3] * 2) or z_ma > z_max - (self.sd * self.center_A[3] * 2):
+            return False
+        return True
 
     def init_generate_det_xyz(self, points):
         """generate the determinants of x, y and z"""
@@ -66,25 +64,25 @@ class Checker:
     def init_is_intersecting(self, polyhedrons, poly_R):
         """check whether polyhedron Left and polyhedron Right do not intersect
         the equation is defined by G(x, y, z) x G(xi, yi, zi) = 0"""
-        # mean_O_R = np.mean(poly_R, axis=0)
-        # G_O_matrix = self.init_generate_G_matrix(poly_R, mean_O_R)
-        # for vert in polyhedrons:
-        #     for vertex in vert:
-        #         G_V_matrix = self.init_generate_G_matrix(poly_R, vertex)
-        #         if G_V_matrix * G_O_matrix >= 0:
-        #             return False
+        mean_O_R = np.mean(poly_R, axis=0)
+        G_O_matrix = self.init_generate_G_matrix(poly_R, mean_O_R)
+        for vert in polyhedrons:
+            for vertex in vert:
+                G_V_matrix = self.init_generate_G_matrix(poly_R, vertex)
+                if G_V_matrix * G_O_matrix >= 0:
+                    return False
 
-        # return True
+        return True
         # convexhall computation makes it slower
         # G matrix computation makes it faster
-        for poly_L in polyhedrons:
-            poly_l = Polygon(poly_L)
-            poly_r = Polygon(poly_R)
-            check = poly_l.convex_hull.intersects(poly_r.convex_hull)
-            if check == True:
-                return False
+        # for poly_L in polyhedrons:
+        #     poly_l = Polygon(poly_L)
+        #     poly_r = Polygon(poly_R)
+        #     check = poly_l.convex_hull.intersects(poly_r.convex_hull)
+        #     if check == True:
+        #         return False
             
-        return True
+        # return True
     
     def project_onto_axis(self, vertices, axis):
         # Project vertices onto the axis and return the min and max values
@@ -109,7 +107,7 @@ class Checker:
         """check the radial separation of the two polyhedrons,
         the poly martix contains coordinates of O and r"""
         for poly_R in centers:
-            check = (((poly_L[0] - poly_R[0]) ** 2) + ((poly_L[1] - poly_R[1]) ** 2 + (poly_L[2] - poly_R[2]) ** 2) ** 0.5) - (poly_L[3] + poly_R[3]) > self.min_d * poly_L[3] * 2
+            check = (((poly_L[0] - poly_R[0]) ** 2) + ((poly_L[1] - poly_R[1]) ** 2 + (poly_L[2] - poly_R[2]) ** 2) ** 0.5) - (poly_L[3] + poly_R[3]) > poly_L[3] * 2 * self.sd
             if check == False:
                 return check
         return True
@@ -125,6 +123,6 @@ class Checker:
         #     return bound and radial and False
         # else:
         #     return bound and radial and True
-        intersect = self.init_is_intersecting(self.polyhedrons, self.poly_A)
-        return bound and radial and intersect
+        # intersect = self.init_is_intersecting(self.polyhedrons, self.poly_A)
+        return bound and radial
 
