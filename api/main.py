@@ -5,7 +5,8 @@ from visualizer import Visualizer
 
 
 d = [2.36, 4.75, 9.50, 12.70, 19.00]
-# d = [4.00, 7.00, 10.00, 13.00, 16.00, 19.00]
+# d = [4.75, 7.125, 9.50, 11.10, 12.70, 15.85, 19.00]
+# d = [4.00, 6.00, 8.00, 10.00, 12.00, 14.00, 16.00]
 # d = [4.75, 7.40, 10.05, 12.70]
 # p = [0, 26, 77, 100]
 
@@ -13,12 +14,13 @@ d = [2.36, 4.75, 9.50, 12.70, 19.00]
 
 print('defining storage')
 storage = Storage()
+
 print('initiating configurations')
 config = Configuration(
     d,
-    0.3,
+    0.40,
     0.5,
-    0.15,
+    0.01,
     n_min=8,
     n_max=18,
     x_min=0,
@@ -30,16 +32,21 @@ config = Configuration(
 )
 print('initiating generator')
 generator = Generator(config, storage)
+
 print('generating')
 generator.wrapper()
+
 print('initiating visualizer')
 visualizer = Visualizer(storage.polyhedrons, storage.hull)
+
 print('visualizing')
 visualizer.visualize()
 # print(storage.hull)
 # print(storage.polyhedrons)
+
 print('exporting to csv')
 storage.export_to_csv()
+
 print('done')
 print(f'total aggregates generated: {len(storage.polyhedrons)}')
 # import pandas as pd

@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
-"""this class contains all the check cases"""
+"""This class contains all the check cases.
+    the sole checks are based on the boundary check 
+    and the radial check. The geometric intersection
+    check is not used in this case"""
 
 import numpy as np
 from scipy.spatial import ConvexHull
-from shapely.geometry import Polygon
+from math import sqrt
 
 
 class Checker:
@@ -20,8 +23,12 @@ class Checker:
         self.sd = sd
 
     def init_check_polygon_in_bound(self, polyhedron, bounds):
-        """check the conditions of the polyhedron"""
-        """check the conditions of the polyhedron"""
+        """
+            checker for the boundary conditions of the polyhedron,
+            considering wall effect, each polyhedron at the 
+            boundary is at a distance of size distribution * 
+                diameter of the polyhedron
+        """
         coor_x = [coor[0] for coor in polyhedron]
         coor_y = [coor[1] for coor in polyhedron]
         coor_z = [coor[2] for coor in polyhedron]
@@ -37,6 +44,7 @@ class Checker:
             return False
         return True
 
+    # separation axis theorem initiation
     def init_generate_det_xyz(self, points):
         """generate the determinants of x, y and z"""
         det_x = np.linalg.det([[points[1][1] - points[0][1], points[1][2] - points[0][2]],
@@ -84,6 +92,7 @@ class Checker:
             
         # return True
     
+    #separation axis theorem implementation
     def project_onto_axis(self, vertices, axis):
         # Project vertices onto the axis and return the min and max values
         projections = np.dot(vertices, axis)
@@ -105,24 +114,20 @@ class Checker:
 
     def init_is_radially_separated(self, poly_L, centers):
         """check the radial separation of the two polyhedrons,
-        the poly martix contains coordinates of O and r"""
+            the poly martix contains coordinates of Origin and 
+            radius, loop hrough all previous inclusions to check 
+            whether the separation diatance is sd * diameter of
+            new inclusion """
         for poly_R in centers:
-            check = (((poly_L[0] - poly_R[0]) ** 2) + ((poly_L[1] - poly_R[1]) ** 2 + (poly_L[2] - poly_R[2]) ** 2) ** 0.5) - (poly_L[3] + poly_R[3]) > poly_L[3] * 2 * self.sd
-            if check == False:
-                return check
+            dist = sqrt((poly_R[0] - poly_L[0])**2 + (poly_R[1] - poly_L[1])**2 + (poly_R[2] - poly_L[2])**2)
+            tol = poly_L[-1] + poly_R[-1]
+            fct = self.sd * poly_L[-1]
+            if dist - tol < fct:
+                return False
         return True
 
     def init_all_checks(self):
         """check whether the polyhedron is not overriding others"""
         radial = self.init_is_radially_separated(self.center_A, self.centers)
         bound = self.init_check_polygon_in_bound(self.poly_A, self.bounds)
-        # return radial and bound
-
-        # intersect = self.separating_axis_test(self.polyhedrons, self.poly_A)
-        # if intersect:
-        #     return bound and radial and False
-        # else:
-        #     return bound and radial and True
-        # intersect = self.init_is_intersecting(self.polyhedrons, self.poly_A)
         return bound and radial
-

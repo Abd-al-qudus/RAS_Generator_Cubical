@@ -82,6 +82,7 @@ class Generator:
         vc = 0
         vr = 0
         vl = 0
+        co_vol = 0
         volumes = self.compute_volume(
             self.config.diameters,
             self.config.vf,
@@ -113,7 +114,8 @@ class Generator:
                     self.config.z_max,
                     self.config.n_min,
                     self.config.n_max)
-                p_vol = ConvexHull(result).volume
+                # p_vol = 4/3 * (math.pi * (center[-1] ** 3))
+                p_vol = ConvexHull(result).volume *  2
                 if len(self.storage.polyhedrons) > 0:
                     if self.check(result, 
                         self.storage.polyhedrons, 
@@ -126,6 +128,7 @@ class Generator:
                         center, 
                         self.storage.centers,
                         self.config.sd).init_all_checks():
+                        # co_vol += (4/3 * (math.pi * center[-1] ** 3)) - ConvexHull(result).volume
                         self.storage.store_polyhedrons(result)
                         self.storage.store_centers(center)
                         vc += p_vol
@@ -145,4 +148,5 @@ class Generator:
             del self.storage.centers[-1]
             print(v['volume'], vc, vl, vr)
             vc = 0
+        # print('co----: ', co_vol)
 

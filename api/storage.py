@@ -31,12 +31,12 @@ class Storage:
 
     def export_to_csv(self):
         """export the coordinates to csv"""
-        with open('coordinates_30.csv', 'w', newline='') as file_obj:
+        with open('coordinates_40.csv', 'w', newline='') as file_obj:
             writer = csv.writer(file_obj)
             writer.writerow(['node-label', 'x', 'y', 'z'])
             [writer.writerow([i+1] + row) for i, rows in enumerate(self.polyhedrons) for row in rows]
 
-        with open('hulls_30.csv', 'w', newline='') as file_obj:
+        with open('hulls_40.csv', 'w', newline='') as file_obj:
             writer = csv.writer(file_obj)
             writer.writerow(['polygon-label', 'a', 'b', 'c'])
             [writer.writerow([i+1] + row) for i, rows in enumerate(self.hull) for row in rows]
